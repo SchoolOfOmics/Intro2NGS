@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Transcriptomics Analysis in R</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M3MJYFFV49"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M3MJYFFV49');
+</script>
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">About the course</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="preCourse.html">More Information</a>
+</li>
+<li>
+  <a href="Configure.html">System configuration</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Exercises
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="chapter0.html">Chapter 1</a>
+    </li>
+    <li>
+      <a href="chapter1.html">Chapter 2</a>
+    </li>
+    <li>
+      <a href="chapter2.html">Chapter 3</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Transcriptomics Analysis in R</h1>
+
+</div>
+
+
+<p>The downstream analysis of transcriptomics data mainly consists of
+four steps and they are</p>
+<ol style="list-style-type: decimal">
+<li>Data Normalization</li>
+<li>Sample distribution assessment</li>
+<li>Differential gene expression analysis</li>
+<li>Gene-set enrichment analysis or functional analysis</li>
+</ol>
+<p>Further, we need to make visualizations of the results
+identified.</p>
+<p>For the exercise we will use transcriptomics data generated from
+SARS-Cov2 infected human blood samples and COVID-19 negative blood
+samples. Then we will compare the data (COVID-19 positive vs COVID-19
+negative) to find genes regulated due to the infection and their
+functions in humans.</p>
+<p>As a first step, let us familiarize with the study design and the
+data.</p>
+<div id="study-design" class="section level2">
+<h2>Study design</h2>
+<p>We are re-using the data from a study published by the Systems
+Virology lab at Karolinska. The study aimed to investigate the metabolic
+signatures altered in humans upon COVID19. More details of the study can
+be found <a href="https://pubmed.ncbi.nlm.nih.gov/35933992/">here</a>.
+We are using the data of randomly selected 12 samples from COVID-19
+negative and COVID-19 positive individuals. The data can be obtained
+from the this <a
+href="https://github.com/SystemsVirology/00_BasicRNASeq/tree/main/Data">link</a></p>
+<p>There you can see three files,</p>
+<ol style="list-style-type: decimal">
+<li><strong>Design.txt</strong> : Shows the sample ID and corresponding
+information such as cohort, age, gender &amp; BMI</li>
+<li><strong>Raw_Read_Count.txt</strong> : The read count table of all
+genes from all 12 samples. Columns are the sample IDs and rows are
+genes. There you can see Ensembl IDs of genes. The count data was
+generated using the tool <code>FeatureCounts</code> after alignment
+using <code>STAR</code></li>
+<li><strong>TPM_Count.txt</strong> : Transcrpts per million reads (TPM)
+normalized read counts.</li>
+</ol>
+<p>Download the three files and keep them inside your project folder.
+For all this tutorial I am keeping a folder named
+<code>COVID_RNASeq</code> as my project folder.</p>
+<p>To download the files, you can click on each files, then it will be
+open in new window. On the right top corner you can find download
+link.</p>
+<p>In the project, we are studying SARS-Cov2 viral infection. It is
+known that viral infection can trigger several antiviral and
+immune-syatem pathways in the host as well as metabolic pathways to
+generate energy. So here we are aim to find the anti-viral,
+immune-system &amp; metabolic pathways altered in response to COVID-19
+disease in humans.</p>
+<div id="the-data" class="section level3">
+<h3>The data</h3>
+<p>As a first step lets have a look at the count data. As we learned,
+the count data is the number of reads originate from each gene. It will
+be whole number since it is count of something. The data will consists
+of different types of genes such as protein coding, non-coding, lincRNAs
+etc. The columns are sample IDs and row names are Gene IDs. First we
+will convert gene IDs to gene names. Then we will select only
+protein-coding genes. We will restrict all our downstream analysis to
+protein-coding genes. You can select the gene biotypes based on your
+objective.</p>
+<p>First, open R studio and create a R markdown document
+<code>File -&gt; New File -&gt; R Markdown</code>. The output format can
+be pdf or html depends on your interest. Save the Markdown document in
+your project folder where all the input files are.</p>
+<pre class="r"><code>library(biomaRt)  # load the package to R environment to use its functionalities.
+
+Count=read.delim(&quot;Raw_Read_Count.txt&quot;)
+dim(Count) # this shows dimension of the data frame.
+
+# creates a data base contaning the information about ensembl genes.
+
+ensembl &lt;- useEnsembl(biomart = &quot;genes&quot;, dataset = &quot;hsapiens_gene_ensembl&quot;) 
+
+# this step fetch gene names (hgnc_symbol) and biotype of the inputted gene IDs
+
+GeneInfo &lt;- getBM(attributes=c(&quot;ensembl_gene_id&quot;,&quot;hgnc_symbol&quot;,&quot;gene_biotype&quot;), filters = &quot;ensembl_gene_id&quot;, values = Count$Ensembl_ID, mart = ensembl) 
+
+dim(GeneInfo)
+
+names(GeneInfo)[names(GeneInfo) == &quot;ensembl_gene_id&quot;] &lt;- &quot;Ensembl_ID&quot;
+
+# adding the fetched data to our original dataframe
+
+MergedData=merge(Count,GeneInfo,by = &quot;Ensembl_ID&quot;,all.x = FALSE)
+
+# counting number of genes from each biotype
+
+library(dplyr)
+MergedData %&gt;% 
+  group_by(gene_biotype) %&gt;%
+  summarise(Count = length(gene_biotype))
+
+
+# Lets save the new count data with gene information
+
+write.table(MergedData,file=&quot;CountData_GeneNames.txt&quot;,sep=&quot;\t&quot;,col.names = NA,quote = FALSE)</code></pre>
+<pre class="r"><code># Selecting count data for protein coding genes. Using subset() function
+
+ProtCoding=subset(MergedData, gene_biotype==&quot;protein_coding&quot;)
+dim(ProtCoding)
+head(ProtCoding)
+
+# We need to make a clean file for further analysis. The column should be sample Ids and rows should genes. Currently we have additional columns hgnc_symbol, gene_biotype. So we are going to correct it. Here we are defining new row names in the format &quot;EnesebleID_GeneName&quot; and delete other columns.
+
+ProtCoding$ID_Name = paste(ProtCoding$Ensembl_ID, ProtCoding$hgnc_symbol, sep = &quot;_&quot;)
+
+# Now make the new column &quot;ID_Name&quot; as the row names and delete the unwanted &quot;hgnc_symbol,gene_biotype,ensembl_gene_id&quot;.
+
+rownames(ProtCoding) = ProtCoding$ID_Name
+ProtCoding$Ensembl_ID = NULL
+ProtCoding$ID_Name = NULL
+ProtCoding$hgnc_symbol = NULL
+ProtCoding$gene_biotype = NULL
+
+# Lets have a look the final data frame.
+head(ProtCoding)
+
+# We are good to go. Lets save the final table too
+write.table(ProtCoding,file=&quot;ProtCodingCount.txt&quot;,sep=&quot;\t&quot;,col.names = NA,quote = FALSE)</code></pre>
+</div>
+</div>
+<div id="data-normalization" class="section level2">
+<h2>Data Normalization</h2>
+<p>Normalization of transcriptomics data (raw read count) is crucial
+before performing downstream analyses like PCA (Principal Component
+Analysis) and UMAP (Uniform Manifold Approximation and Projection). PCA
+&amp; UMAP are used to study the sample distribution. Different
+normalization methods address various aspects of the data, such as
+library size differences, variability in gene expression, and technical
+biases. Most commonly used normalization methods are log2 scaled counts
+per million reads (log2 CPM), transcript per million reads (TPM),
+Trimmed Mean of M-values (TMM) and Variance Stabilizing Transformation
+(VST).</p>
+<div id="log2-cpm" class="section level3">
+<h3>log2 CPM</h3>
+<p>This normalization technique adjusts for differences in sequencing
+depth across samples by converting raw counts into counts per million
+reads, followed by a logarithmic transformation to stabilize variance.
+Specifically, it accounts for variations in library size by scaling the
+counts relative to the total number of reads in each sample, and it
+normalizes the data to a common scale, making it easier to compare gene
+expression levels across samples.</p>
+<p>The log2 transformation further mitigates issues with skewed data
+distributions and reduces the influence of extreme values, allowing for
+more balanced statistical analyses. This method is particularly useful
+for downstream applications like Principal Component Analysis (PCA) and
+clustering, where variance stabilization and comparability across
+samples are crucial for accurate and meaningful results.</p>
+<p>We are using funtions provided by the R packages <code>Biobase</code>
+and <code>edgeR</code></p>
+<pre class="r"><code>library(Biobase)   # Loading the package
+library(edgeR)     # Loading the package
+
+count=read.delim(&quot;ProtCodingCount.txt&quot;,row.names = 1,check.names = FALSE)
+countX=as.matrix(count) # Converting the dataframe to matrix format.
+des=read.delim(&quot;Design.txt&quot;,row.names = 1)
+expSet=ExpressionSet(countX, phenoData=AnnotatedDataFrame(data=des)) # Creating a object of specific format.
+expSet &lt;- expSet[rowSums(exprs(expSet)) != 0, ] # to remove genes having zeros in all samples
+log2cpm &lt;- cpm(exprs(expSet), log = TRUE)
+
+write.table(log2cpm,file=&quot;Log2CPM_ProtCoding.txt&quot;,sep=&quot;\t&quot;,quote = FALSE,col.names = NA)</code></pre>
+</div>
+<div id="tpm" class="section level3">
+<h3>TPM</h3>
+<p>TPM normalization adjusts for both sequencing depth and gene length,
+offering a way to compare gene expression levels across samples and
+genes. This method first normalizes read counts by the length of each
+gene, converting them to a per-kilobase basis, and then scales these
+values to a common scale where the total expression in each sample sums
+to one million.</p>
+<p>This approach accounts for differences in library sizes and ensures
+that gene expression values are comparable across samples, regardless of
+the sequencing depth. The TPM normalization method also facilitates
+meaningful comparisons between genes of varying lengths, as it removes
+length bias from the raw counts. This makes TPM particularly effective
+for analyzing and visualizing gene expression profiles, providing a
+consistent basis for downstream analyses like differential expression
+studies and clustering, where balanced representation across samples and
+genes is essential.</p>
+<p>TPM normalization cannot be performed directly on raw read count,
+accurately. We need to perform read alingment at the resolution
+individual transcript for TPM computation. Note that, here we performed
+alignment against each gene, not transcripts. There are specific tools
+that provide accurate computation of TPM values. Here it is already
+performed using the tool <a
+href="https://pachterlab.github.io/kallisto/about">kallisto</a> and data
+is availble to download (TPM_Count.txt)</p>
+<p>So we just subset protein coding genes from the data set.</p>
+<pre class="r"><code>library(biomaRt)  # load the package to R environment to use its functionalities.
+
+Count=read.delim(&quot;TPM_Count.txt&quot;)
+dim(Count) # this shows dimension of the data frame.
+
+# creates a data base contaning the information about ensembl genes.
+
+ensembl &lt;- useEnsembl(biomart = &quot;genes&quot;, dataset = &quot;hsapiens_gene_ensembl&quot;) 
+
+# this step fetch gene names (hgnc_symbol) and biotype of the inputted gene IDs
+
+GeneInfo &lt;- getBM(attributes=c(&quot;ensembl_gene_id&quot;,&quot;hgnc_symbol&quot;,&quot;gene_biotype&quot;), filters = &quot;ensembl_gene_id&quot;, values = Count$Ensembl_ID, mart = ensembl) 
+
+dim(GeneInfo)
+
+names(GeneInfo)[names(GeneInfo) == &quot;ensembl_gene_id&quot;] &lt;- &quot;Ensembl_ID&quot;
+
+# adding the fetched data to our original dataframe
+
+MergedData=merge(Count,GeneInfo,by = &quot;Ensembl_ID&quot;,all.x = FALSE)
+
+# Lets save the new count data with gene information
+
+write.table(MergedData,file=&quot;TPM_GeneNames.txt&quot;,sep=&quot;\t&quot;,col.names = NA,quote = FALSE)
+
+# Selecting count data for protein coding genes. Using subset() function
+
+ProtCoding=subset(MergedData, gene_biotype==&quot;protein_coding&quot;)
+
+ProtCoding$ID_Name = paste(ProtCoding$Ensembl_ID, ProtCoding$hgnc_symbol, sep = &quot;_&quot;)
+
+# Now make the new column &quot;ID_Name&quot; as the row names and delete the unwanted &quot;hgnc_symbol,gene_biotype,ensembl_gene_id&quot;.
+
+rownames(ProtCoding) = ProtCoding$ID_Name
+ProtCoding$Ensembl_ID = NULL
+ProtCoding$ID_Name = NULL
+ProtCoding$hgnc_symbol = NULL
+ProtCoding$gene_biotype = NULL
+
+# Lets have a look the final data frame.
+
+head(ProtCoding)
+
+# We are good to go. Lets save the final table too
+
+write.table(ProtCoding,file=&quot;ProtCodingTPM.txt&quot;,sep=&quot;\t&quot;,col.names = NA,quote = FALSE)</code></pre>
+</div>
+<div id="tmm" class="section level3">
+<h3>TMM</h3>
+<p>TMM (Trimmed Mean of M-values) normalization is a method used in
+RNA-seq data analysis to correct for compositional biases and
+differences in library sizes across samples. It works by calculating
+normalization factors based on the trimmed mean of log-ratios of gene
+expression between samples, which mitigates the impact of extreme values
+and outliers. This ensures that gene expression levels are comparable
+across samples, making TMM particularly effective for accurate
+differential expression analysis and reducing biases due to varying
+library compositions.</p>
+<p>Here also we are using function provided by R package
+<code>edgeR</code></p>
+<pre class="r"><code>library(edgeR)
+
+count=read.delim(&quot;ProtCodingCount.txt&quot;,row.names = 1,check.names = FALSE)
+countX=as.matrix(count) # Converting the dataframe to matrix format.
+
+# Create a DGEList object
+
+dge &lt;- DGEList(counts = countX)
+
+# Calculate normalization factors using TMM
+
+dge &lt;- calcNormFactors(dge)
+
+# Get normalized counts
+
+TMM_counts &lt;- cpm(dge, normalized.lib.sizes = TRUE)
+
+# Save the data to a file
+
+write.table(TMM_counts,file=&quot;TMM_ProtCodingCount.txt&quot;,sep=&quot;\t&quot;,quote = FALSE,col.names = NA)</code></pre>
+</div>
+<div id="vst" class="section level3">
+<h3>VST</h3>
+<p>VST (Variance Stabilizing Transformation) normalization transforms
+RNA-seq data to stabilize variance across gene expression levels. By
+applying a log transformation and adjusting for variance, VST makes data
+more comparable and suitable for downstream analyses like PCA and
+clustering, reducing the impact of variability in low-count genes.</p>
+<p>We are using function provided by R package <code>DESeq2</code></p>
+<pre class="r"><code>library(DESeq2)
+
+count=read.delim(&quot;ProtCodingCount.txt&quot;,row.names = 1,check.names = FALSE)
+countX=as.matrix(count) # Converting the dataframe to matrix format.
+des=read.delim(&quot;Design.txt&quot;,row.names = 1)
+
+# Create a DESeqDataSet object
+
+dds &lt;- DESeqDataSetFromMatrix(countData = countX, colData = des, design = ~ Group)
+
+# Perform VST normalization
+
+vsd &lt;- vst(dds, blind = FALSE)
+
+# Access the VST transformed data
+
+VST_counts &lt;- assay(vsd)
+
+write.table(VST_counts,file=&quot;VST_ProtCodingCount.txt&quot;,sep=&quot;\t&quot;,quote = FALSE,col.names = NA)</code></pre>
+</div>
+</div>
+<div id="sample-distribution" class="section level2">
+<h2>Sample distribution</h2>
+<p>Sample distribution estimation involves analyzing and summarizing the
+underlying distribution of data points within a dataset. Accurate
+estimation of sample distributions helps in identifying patterns,
+detecting outliers, and ensuring that the dimensionality reduction
+effectively captures the intrinsic relationships between data points. In
+PCA, it helps in determining the variance explained by each principal
+component, while in UMAP, it aids in preserving the local and global
+structure of the data during projection to lower dimensions. Proper
+distribution estimation enhances the reliability of these analyses by
+providing a clear picture of data spread and density.</p>
+<div id="pca" class="section level3">
+<h3>PCA</h3>
+<p>Principal Component Analysis (PCA) is a dimensionality reduction
+technique that transforms high-dimensional data into a lower-dimensional
+space while retaining the most variance. It identifies the principal
+components—orthogonal vectors that capture the maximum variance in the
+data. PCA simplifies the dataset by projecting it onto these principal
+components, making it easier to visualize and analyze complex data
+patterns.</p>
+<p>We use the R package <code>PCAtools</code>. The PCA reduced the total
+dimensions of the data to a few number. So that we can plot the reduced
+dimensions on a 2-dimensional space, simply a x-y scatter plot to
+visualize the sample distribution.</p>
+<pre class="r"><code>library(PCAtools)
+
+# First let&#39;s use TPM data to create PCA
+
+TPMprot=read.delim(&quot;ProtCodingTPM.txt&quot;,row.names = 1,check.names = FALSE)
+Design=read.delim(&quot;Design.txt&quot;,row.names = 1)
+p &lt;- pca(TPMprot, metadata = Design, removeVar = 0.1,scale = TRUE)
+
+# The function pca() returns an object of class pca. To check the elements of the object. Use names() function below.
+
+names(p)</code></pre>
+<pre><code>## [1] &quot;rotated&quot;    &quot;loadings&quot;   &quot;variance&quot;   &quot;sdev&quot;       &quot;metadata&quot;   &quot;xvars&quot;      &quot;yvars&quot;      &quot;components&quot;</code></pre>
+<pre class="r"><code># To see what each elements, we can read the manual of the function. The manual of any function in R can be seen using &quot;?&quot; as shown below.
+
+?pca
+
+# Check the percentage variance captured by each PCs. The sum of variances should be 100.
+
+as.data.frame(p$variance)</code></pre>
+<pre><code>##        p$variance
+## PC1  4.651474e+01
+## PC2  8.598058e+00
+## PC3  6.869512e+00
+## PC4  5.621716e+00
+## PC5  4.553358e+00
+## PC6  3.743865e+00
+## PC7  3.162258e+00
+## PC8  3.038319e+00
+## PC9  2.519139e+00
+## PC10 2.264404e+00
+## PC11 1.945224e+00
+## PC12 1.821220e+00
+## PC13 1.485242e+00
+## PC14 1.271704e+00
+## PC15 1.109436e+00
+## PC16 9.727418e-01
+## PC17 8.728597e-01
+## PC18 8.410931e-01
+## PC19 7.453625e-01
+## PC20 7.363045e-01
+## PC21 5.292819e-01
+## PC22 4.129987e-01
+## PC23 3.711604e-01
+## PC24 5.037529e-28</code></pre>
+<pre class="r"><code># Since the first two PCs captured most of the variances in the data. It should be enough to access the sample distribution. We can plot the PC1 in x-axis and PC2 in the y-axis.
+
+#To plot the sample distribution as a x-y scatter plot, we need x and y cordinates of each samples. The cordinates of each samples in reduced dimensions will be stored in the element &quot;rotated&quot;. We can get those and save that in an another data frame &quot;PC_Cord&quot;.
+
+PC_Cord=p$rotated
+
+# Check the content
+head(PC_Cord)</code></pre>
+<pre><code>##                        PC1       PC2       PC3        PC4       PC5         PC6        PC7        PC8
+## COVID19_HC_06  -21.4290821 -3.576596  35.65486  18.799949  7.042755  -5.0455302 -1.3365204 -14.782931
+## COVID19_HC_29   10.8007294  6.199259  76.05878  32.458661 17.445076   2.5740732 -2.2425231   2.331464
+## COVID19_HC_01 -107.4546358 -1.656793 -24.34960 -36.018950  6.390799 -12.1169306  3.4434546 -14.625709
+## COVID19_HC_22   -0.3464107 16.553542  49.21874  43.592968  9.725239   0.1949323 -0.7580144  -7.560328
+## COVID19_HC_31  -50.4362687 -6.437384  18.37839  10.453884  4.046969  -7.3733931 -1.2338872 -11.113019
+## COVID19_HC_25  -65.2708634 -6.095207  15.71600  -8.854693  7.737311   0.6230582  1.9323905  -2.025534
+##                      PC9       PC10        PC11         PC12       PC13        PC14       PC15       PC16
+## COVID19_HC_06  -2.756554   3.165437  -0.5879384 -10.59883632 -0.6413344  -1.1795916  20.233919 -22.683290
+## COVID19_HC_29  24.250954  23.387331  -8.8728185  -0.04986246 30.4270156  46.2203327  -8.427841   3.341993
+## COVID19_HC_01 -24.563463 -10.673246  19.7956089 -10.74944889 55.0996141  -0.7005147  13.830575  24.379038
+## COVID19_HC_22  17.028226  15.192176 -10.7153206 -20.49866149 14.2912437 -57.2751752 -14.385177  10.239445
+## COVID19_HC_31  -2.055098  -1.068822  -0.1112786  -9.26495239 -1.7830417  -4.0730789  11.348588 -29.501047
+## COVID19_HC_25  -2.865792  -4.059834   5.0819548  -1.35517512  2.5012227   2.2006555 -20.403611  -6.393021
+##                     PC17        PC18       PC19       PC20      PC21       PC22       PC23         PC24
+## COVID19_HC_06 -17.537160  -4.5597794 -23.523288  36.826772  9.548331 -0.7102613 -1.7748676 3.125957e-13
+## COVID19_HC_29 -12.225413  10.1386872   6.534336  -7.544116 -2.130088 -2.9985446 -0.3800524 3.125957e-13
+## COVID19_HC_01  10.322705 -10.9850298   3.888018   7.953976  2.450926  0.7415060 -1.5460978 3.125957e-13
+## COVID19_HC_22  -4.297033   8.9752347   4.259614  -3.426444 -1.654086  0.7322488  2.5325979 3.125957e-13
+## COVID19_HC_31  -3.523906 -40.4608244  16.411900 -24.625050  4.473859 -2.5202703  0.1657884 3.125957e-13
+## COVID19_HC_25  22.473799  -0.8551292 -43.807633 -21.308856  1.652974  0.5408414 -5.2038036 3.125957e-13</code></pre>
+<pre class="r"><code># In the below steps, we are adding the sample information along with the PCA co-ordinates.
+
+PC_Cord$Group=Design$Group
+PC_Cord$Age=Design$Age
+PC_Cord$Gender=Design$Gender
+PC_Cord$BMI=Design$BMI
+
+# If we need to save the PCA results for future use.
+
+write.table(PC_Cord,file=&quot;PCA_Cordinates_TPM.txt&quot;,sep=&quot;\t&quot;,col.names = NA,quote = FALSE)
+
+# To visualize the sample distribution in 2D, we will plot PC1 in x-azis and PC2 in y-axis, since PC1 and PC2 captures the maximum variane in the data. 
+
+ggplot(PC_Cord, aes(x=PC1, y=PC2)) + geom_point(size=3)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>In the above plot, each points represent each sample. But we cannot
+see which ones are healthy and COVID19. To add that information, lets
+color the points based on the sample Group.</p>
+<pre class="r"><code>ggplot(PC_Cord, aes(x=PC1, y=PC2,colour = Group)) + geom_point(size=3)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>In an ideal situation, we expect that all the healthy samples will
+cluster nearby and all the COVID19 will cluster together.</p>
+<p>Let us change the color of the points.</p>
+<pre class="r"><code>ggplot(PC_Cord, aes(x=PC1, y=PC2,colour = Group)) + geom_point(size=3)+
+  scale_color_manual(values=c(&quot;Healthy&quot;=&quot;#56B4E9&quot;, &quot;COVID19&quot;=&quot;red&quot;))</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div id="umap" class="section level3">
+<h3>UMAP</h3>
+<p>UMAP (Uniform Manifold Approximation and Projection) is a non-linear
+dimensionality reduction technique that focuses on preserving both local
+and global structures of data when projecting it into a
+lower-dimensional space. Unlike PCA, which is linear and emphasizes
+variance, UMAP excels at capturing complex, non-linear relationships and
+is particularly effective for visualizing clusters in high-dimensional
+data.</p>
+<p>UMAP reduces the dimensions of the data into two reduced dimensions.
+We can plot those on a x-y scatter plot to visualize the sample
+distribution. We use the R package <code>umap</code>.</p>
+<pre class="r"><code>library(umap)
+library(ggplot2)
+
+data=read.delim(&quot;ProtCodingTPM.txt&quot;,header=TRUE,row.names = 1,check.names = FALSE)
+Res_umap = umap(t(data))
+Design=read.delim(&quot;Design.txt&quot;,row.names = 1)
+
+# As in the case PCA, umap() also returns an object with several elements. Among them &quot;layout&quot; contains the reduced dimensions of the data which we need to plot. UMAP reduced the dimensions into two reduced dimension, and those can be plotted on x and y axis of a scatter plot.
+
+Res_umapRes=as.data.frame(Res_umap$layout)
+
+Res_umapRes$Group=Design$Group
+Res_umapRes$Age=Design$Age
+Res_umapRes$Gender=Design$Gender
+Res_umapRes$BMI=Design$BMI
+
+ggplot(Res_umapRes, aes(x=V1, y=V2,colour = Group)) + geom_point(size=3)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<pre class="r"><code># To save the UMAP cordinates to a file
+write.table(Res_umapRes,file=&quot;UMAP_Cordinates_TPM.txt&quot;,sep=&quot;\t&quot;,col.names = NA,quote = FALSE)</code></pre>
+</div>
+</div>
+<div id="differential-gene-expression" class="section level2">
+<h2>Differential Gene Expression</h2>
+<p><strong>Differential gene expression (DGE)</strong> refers to the
+process of identifying genes that are expressed at different levels
+across distinct experimental conditions or groups, such as healthy
+vs. diseased tissues. The goal is to determine which genes show
+significant changes in their expression patterns, providing insights
+into biological processes and pathways that may be altered in response
+to certain conditions.</p>
+<p>The expected results from a DGE analysis typically include a list of
+genes with associated statistics like fold change, p-values, and
+adjusted p-values (FDR) that indicate the magnitude and significance of
+expression differences. Genes with a high fold change and low adjusted
+p-values are considered differentially expressed.</p>
+<p>Performing DGE is essential in identifying biomarkers, understanding
+disease mechanisms, and uncovering potential therapeutic targets. We use
+the R package <strong>DESeq2</strong> for this analysis. It models gene
+expression data, accounting for biological variability, and provides
+robust statistical testing to identify differentially expressed genes,
+making it ideal for RNA-seq data analysis.</p>
+<pre class="r"><code>library(DESeq2)
+library(dplyr)
+# Loading our sample details / Experiment design
+
+Design=read.delim(&quot;Design.txt&quot;,row.names = 1)
+
+# Loading the count data. Deseq2 requires unprocessed raw read count data. The package performs its own normalization to account for various biases present in the data
+
+Count=read.delim(&quot;ProtCodingCount.txt&quot;,row.names = 1)
+
+Dq2_Matrix=DESeqDataSetFromMatrix(countData = Count, colData = Design, design = ~Group)
+Dq2_Obj=DESeq(Dq2_Matrix)
+Dq2_Results=results(object = Dq2_Obj,contrast = c(&quot;Group&quot;,&quot;COVID19&quot;,&quot;Healthy&quot;))</code></pre>
+<p>The dataframe <strong>Dq2_Results</strong> has the results. Open it
+and inspect the results. The output will contain the statistics of all
+the genes inputted. We need to define a threshold for the statistical
+significance. Lets say, we define down-regulation of genes when the gene
+has padj &lt; 0.05 and Log2Foldchange &lt;= -1. and up-regulation is
+when a gene has padj &lt; 0.05 and Log2Foldchange &gt;= 1. We can add a
+extra column in the data frame to add the significance of the gene
+expression.</p>
+<pre class="r"><code>Dq2_Results$Significance=&quot;Non Significant&quot;
+Dq2_Results$Significance[Dq2_Results$padj &lt; 0.05 &amp; Dq2_Results$log2FoldChange &gt;= 1]=&quot;Up regulated in COVID compared to HC&quot;
+Dq2_Results$Significance[Dq2_Results$padj &lt; 0.05 &amp; Dq2_Results$log2FoldChange &lt;= -1]=&quot;Down regulated in COVID compared to HC&quot;
+
+ # counting number of down regulated and up-regulated genes.
+
+as.data.frame(Dq2_Results) %&gt;% 
+  group_by(Significance) %&gt;%
+  summarise(Count = length(Significance))</code></pre>
+<pre><code>## # A tibble: 3 × 2
+##   Significance                           Count
+##   &lt;chr&gt;                                  &lt;int&gt;
+## 1 Down regulated in COVID compared to HC   233
+## 2 Non Significant                        19112
+## 3 Up regulated in COVID compared to HC     563</code></pre>
+<p>We have merged the gene name and gene ID together in the previous
+step. now we need to split it becuase we need gene names to perform
+further analysis. And also it is the name we are reporting in the
+results.</p>
+<pre class="r"><code>df_split &lt;- do.call(rbind, strsplit(rownames(Dq2_Results), &quot;_&quot;))
+Dq2_Results$ID=df_split[, 1]
+Dq2_Results$GeneName=df_split[, 2]
+
+write.table(Dq2_Results,file=&quot;Results_Covid_vs_HC.txt&quot;,sep=&quot;\t&quot;,col.names = NA,quote = FALSE)</code></pre>
+</div>
+<div id="gene-set-enrichment" class="section level2">
+<h2>Gene-set enrichment</h2>
+<p>After identifying significanly regulated genes we can find what are
+their function. Gene-set enrichment analysis is a way of understanding
+which biological processes or pathways that are active or important in a
+set of genes you are studying. Imagine you have a list of genes that
+behave differently under certain conditions, like in a disease versus a
+healthy state (significantly regulated). Instead of looking at each gene
+individually, gene-set enrichment helps you look at groups of genes that
+work together to perform a specific function such as anti-viral response
+for example.</p>
+<p>These groups of genes, called <strong>gene sets</strong>, are already
+known to be involved in specific tasks, like repairing DNA, helping
+cells grow, or processing nutrients. Gene-set enrichment check if many
+of the genes from any of these known groups are showing up in your list
+of significanlty regulated genes more than you’d expect by chance.</p>
+<p>For example, if you find that many genes involved in the immune
+response are active in a disease state, gene-set enrichment would
+highlight that, giving you insights into which biological processes are
+likely at play. Resources like <strong>Gene Ontology (GO)</strong> or
+<strong>KEGG pathways</strong> provide these predefined groups of genes
+that are associated with specific biological functions or processes.</p>
+<p>In simple terms, it helps you see patterns in your data by showing
+which groups of genes are “working together” more than usual, helping
+researchers understand the biological processes driving the differences
+in gene behavior.</p>
+<p>We use the tool <code>Enrichr</code> for performing gene-set
+enrichment. There is an online version of the tool and R implementation
+are available. You can do either way. Link to the online version is <a
+href="https://maayanlab.cloud/Enrichr/">here</a></p>
+<p>The enrichr provided variety of gene-sets. Check the
+<em>Libraries</em> section of the website. The gene-set should be chosen
+based on your objective. We can choose MSigDB_Hallmark_2020 gene-set
+since our objective to find molecular pathways altered in COVID19. The
+<a
+href="https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp">hallmark
+gene-set</a> is more clean and manually curated ideal for our
+purpose.</p>
+<p>R package <code>enrichR</code> need to be installed if you want to do
+it in R.</p>
+<pre class="r"><code>library(enrichR)
+
+# Below code will fetch all availble gene-sets.
+dbs &lt;- listEnrichrDbs()
+
+# check the available gene-sets
+dbs$libraryName
+
+# Read our differential expression results. Since here the input is the names of genes significantly regulated
+
+Res=read.delim(&quot;Results_Covid_vs_HC.txt&quot;,row.names = 1)
+Significant=subset(Res,Significance == &quot;Up regulated in COVID compared to HC&quot; | Significance == &quot;Down regulated in COVID compared to HC&quot; )
+
+# Get the names of all significantly regulated genes and make a vector.
+Genes=as.vector(Significant$GeneName)
+
+# We chose MSigDB_Hallmark_2020 gene-sets
+
+enrichResults &lt;- enrichr(Genes, &quot;MSigDB_Hallmark_2020&quot;)
+
+# Save the analysis results
+
+write.table(enrichResults$MSigDB_Hallmark_2020,file=&quot;GSEA_Results.txt&quot;,col.names = NA,sep=&quot;\t&quot;,quote = FALSE)</code></pre>
+<p>Check the results to see whether it makes sense.</p>
+</div>
+<div id="visualizations" class="section level2">
+<h2>Visualizations</h2>
+<p>We have now finished all the planned analysis. In this sections we
+will see how to make some figures to represent our findings.</p>
+<div id="volcano-plot" class="section level3">
+<h3>Volcano plot</h3>
+<p>Volcano plot is a commonly used visualization of differential gene
+expression analysis results. It is basically a x-y scatter plot. When
+plotted it will look like an exploding vocano hence it is called volcano
+plot. We plot log2 fold change on the x-axis and negative log10 scaled
+padj values on the y-axis.</p>
+<p>Let us see the code to make a volcano plot step by step</p>
+<pre class="r"><code>library(ggplot2)
+data=read.delim(&quot;Results_Covid_vs_HC.txt&quot;,row.names = 1)
+
+ggplot(data, aes(x=log2FoldChange, y=-log10(padj))) + geom_point()</code></pre>
+<pre><code>## Warning: Removed 4491 rows containing missing values or values outside the scale range (`geom_point()`).</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>In the plot, each dots represent each genes. Now lets give
+significantly down regulated genes, a different color. Remember our
+condition for downregulated genes is padj &lt; 0.05 &amp; Log2foldchane
+&lt;-1.</p>
+<pre class="r"><code>library(ggplot2)
+data=read.delim(&quot;Results_Covid_vs_HC.txt&quot;,row.names = 1)
+
+ggplot(data, aes(x=log2FoldChange, y=-log10(padj))) + geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; -1),color=&quot;darkgreen&quot;)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p>The above plot shows only significantly down regulated genes. Now to
+the same plot lets add up-regulated genes too.</p>
+<pre class="r"><code>library(ggplot2)
+data=read.delim(&quot;Results_Covid_vs_HC.txt&quot;,row.names = 1)
+
+ggplot(data, aes(x=log2FoldChange, y=-log10(padj))) + 
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; -1),color=&quot;darkgreen&quot;) + 
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &gt; 1),color=&quot;darkred&quot;)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Now what is left to plot are non-significant genes, which are genes
+with padj &gt; 0.05 and genes with padj &lt; 0.05 and |log2foldchange|
+&gt; 0 and |log2foldchange| &lt; 1.</p>
+<pre class="r"><code>library(ggplot2)
+data=read.delim(&quot;Results_Covid_vs_HC.txt&quot;,row.names = 1)
+
+ggplot(data, aes(x=log2FoldChange, y=-log10(padj))) + 
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; -1),color=&quot;darkgreen&quot;) + 
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &gt; 1),color=&quot;darkred&quot;) +
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; 1 &amp; log2FoldChange &gt; 0),color=&quot;darkgrey&quot;)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<pre class="r"><code>library(ggplot2)
+data=read.delim(&quot;Results_Covid_vs_HC.txt&quot;,row.names = 1)
+
+ggplot(data, aes(x=log2FoldChange, y=-log10(padj))) + 
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; -1),color=&quot;darkgreen&quot;) + 
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &gt; 1),color=&quot;darkred&quot;) +
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; 1 &amp; log2FoldChange &gt; 0),color=&quot;darkgrey&quot;)+
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &gt; -1 &amp; log2FoldChange &lt; 0),color=&quot;darkgrey&quot;)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<pre class="r"><code>library(ggplot2)
+data=read.delim(&quot;Results_Covid_vs_HC.txt&quot;,row.names = 1)
+
+ggplot(data, aes(x=log2FoldChange, y=-log10(padj))) + 
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; -1),color=&quot;darkgreen&quot;) + 
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &gt; 1),color=&quot;darkred&quot;) +
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; 1 &amp; log2FoldChange &gt; 0),color=&quot;darkgrey&quot;)+
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &gt; -1 &amp; log2FoldChange &lt; 0),color=&quot;darkgrey&quot;)+
+  geom_point(data=subset(data, padj &gt; 0.05),color=&quot;darkgrey&quot;)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<p>This is our final volcano plot. Think of anyways to make it any
+better.</p>
+<p>If you need to save the plot in a pdf file.</p>
+<pre class="r"><code>library(ggplot2)
+data=read.delim(&quot;Results_Covid_vs_HC.txt&quot;,row.names = 1)
+
+pdf(&quot;Volcanoplot.pdf&quot;)
+ggplot(data, aes(x=log2FoldChange, y=-log10(padj))) + 
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; -1),color=&quot;darkgreen&quot;) +
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &gt; 1),color=&quot;darkred&quot;) +
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &lt; 1 &amp; log2FoldChange &gt; 0),color=&quot;darkgrey&quot;)+
+  geom_point(data=subset(data, padj &lt; 0.05 &amp; log2FoldChange &gt; -1 &amp; log2FoldChange &lt; 0),color=&quot;darkgrey&quot;)+
+  geom_point(data=subset(data, padj &gt; 0.05),color=&quot;darkgrey&quot;)
+dev.off()</code></pre>
+</div>
+<div id="visualization-of-pathways" class="section level3">
+<h3>Visualization of pathways</h3>
+<p>Main statistics associated with the GSEA results are the overlap and
+the adjusted pvalues. If a pathway-X has overlap value 18/200 means
+that, In Pathway-X there are in total 200 genes based in experimental
+evidences and out of those 200 genes, 18 genes are significantly
+regulated in our analysis.</p>
+<p>A bargraph can be a very basic visualization of the GSEA results.</p>
+<pre class="r"><code>Pwy=read.delim(&quot;GSEA_Results.txt&quot;,row.names = 1)
+SigniPwy=subset(Pwy,Adjusted.P.value &lt; 0.05)
+ggplot(data=SigniPwy, aes(x=Term, y=-log10(Adjusted.P.value))) + geom_bar(stat=&quot;identity&quot;) + coord_flip()</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p>Lets arrange the pathways in such was that most significant pathways
+appear on the top.</p>
+<pre class="r"><code>Pwy=read.delim(&quot;GSEA_Results.txt&quot;,row.names = 1)
+SigniPwy=subset(Pwy,Adjusted.P.value &lt; 0.05)
+ggplot(data=SigniPwy, aes(x=reorder(Term, -log10(Adjusted.P.value)), y=-log10(Adjusted.P.value))) + geom_bar(stat=&quot;identity&quot;) + coord_flip()</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>Let us add color and change the x-axis title.</p>
+<pre class="r"><code>Pwy=read.delim(&quot;GSEA_Results.txt&quot;,row.names = 1)
+SigniPwy=subset(Pwy,Adjusted.P.value &lt; 0.05)
+ggplot(data=SigniPwy, aes(x=reorder(Term, -log10(Adjusted.P.value)), y=-log10(Adjusted.P.value))) + geom_bar(stat=&quot;identity&quot;,fill=&quot;#4682B4&quot;) + coord_flip()+xlab(&quot;Pathway Name&quot;)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+</div>
+<div id="heatmap" class="section level3">
+<h3>Heatmap</h3>
+<p>A <strong>heatmap</strong> is a graphical representation of data
+where individual values are represented by colors, making it easy to
+visualize patterns and trends. In the context of <strong>gene expression
+pattern visualization</strong>, heatmaps are commonly used to display
+the expression levels of multiple genes across different samples or
+conditions. Each cell in the heatmap represents the expression level of
+a gene in a particular sample, with color intensity indicating high or
+low expression. This allows researchers to quickly identify clusters of
+genes with similar expression profiles, detect differential expression
+patterns, and explore relationships between genes and experimental
+conditions, such as disease states or treatments.</p>
+<p>R package <code>ComplexHeatmap</code> can be used to make clean and
+quality heatmaps.</p>
+<p>Let us make a heatmap to show the expression pattern of significantly
+regulated genes belong to glycolysis pathway in COVID19 and Healthy
+samples.</p>
+<p>You can find the glycolysis pathway genes which are significantly
+regulated in GSEA results. Look for the column <code>Genes</code>.</p>
+<pre class="r"><code># Genes in Glycolysis pathways
+Genes=c(&quot;B4GALT2&quot;,&quot;CHPF&quot;,&quot;IGFBP3&quot;,&quot;PGAM2&quot;,&quot;SPAG4&quot;,&quot;PLOD2&quot;,&quot;HMMR&quot;,&quot;NOL3&quot;,&quot;CENPA&quot;,&quot;AURKA&quot;,&quot;TPST1&quot;,&quot;NT5E&quot;,&quot;CLDN9&quot;,&quot;DEPDC1&quot;,&quot;CDK1&quot;,&quot;SDC1&quot;,&quot;ANG&quot;,&quot;KIF20A&quot;,&quot;MET&quot;)
+
+# Now we need to fetch normalized expression values of the above genes in each samples. We have normalized data using several methods. For now let us take the TPM normalized values.
+
+TPM=read.delim(&quot;ProtCodingTPM.txt&quot;,row.names = 1)
+
+# The row names are concatenation of Gene IDs and Gene Names. Let us split that into two columns, because we need fetch expression values based on our input gene names.
+
+TPM_split &lt;- do.call(rbind, strsplit(rownames(TPM), &quot;_&quot;))</code></pre>
+<pre><code>## Warning in rbind(...): number of columns of result is not a multiple of vector length (arg 1)</code></pre>
+<pre class="r"><code>TPM$ID=TPM_split[, 1]
+TPM$GeneName=TPM_split[, 2]
+
+# Now fetch the expression values of our input gene names.
+
+GlycoGeneTPM = TPM[TPM$GeneName %in% Genes, ]
+
+# Set the Gene name as rownames of the dataframe
+rownames(GlycoGeneTPM)=GlycoGeneTPM$GeneName
+
+# Remove the extra columns
+GlycoGeneTPM$ID=NULL
+GlycoGeneTPM$GeneName=NULL
+
+# Now GlycoGeneTPM has the data to make the heatmap.</code></pre>
+<p>Below is the code to make heatmap. We plot sample names on the
+columns and Gene names on rows of the heatmap.</p>
+<pre class="r"><code>library(circlize)
+library(ComplexHeatmap)
+
+# Define the color range
+col_tpm = colorRamp2(c(2,1,0.5,0,-0.5,-1,-2),c(&quot;#ffff19&quot;,&quot;#99990f&quot;,&quot;#4c4c07&quot;,&quot;white&quot;,&quot;#203470&quot;,&quot;#3454b4&quot;,&quot;#4169e1&quot;))
+
+# Here we are scaling the TPM values  using scale() function, so that the under expressed genes will be negative values and over expressed genes will be positive values. Once it is scaled it is called z-score.
+
+Heatmap(as.matrix(t(scale(t(GlycoGeneTPM)))),col=col_tpm,
+           name = &quot;z-score&quot;,row_names_gp=gpar(fontsize = 6),
+           height  = unit(5, &quot;cm&quot;),width  = unit(8, &quot;cm&quot;))</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
+<p>Let us try to group COVID19 samples and Healthy samples together. For
+this purpose we need to add the sample annotaion on the heatmap</p>
+<pre class="r"><code>library(circlize)
+library(ComplexHeatmap)
+
+# Define the color range
+col_tpm = colorRamp2(c(2,1,0.5,0,-0.5,-1,-2),c(&quot;#ffff19&quot;,&quot;#99990f&quot;,&quot;#4c4c07&quot;,&quot;white&quot;,&quot;#203470&quot;,&quot;#3454b4&quot;,&quot;#4169e1&quot;))
+
+chrt=read.delim(&quot;Design.txt&quot;,row.names = 1)
+
+#Lets remove columns except Group.
+
+chrt$Age=NULL
+chrt$Gender=NULL
+chrt$BMI=NULL
+
+chrt_anno = HeatmapAnnotation(df = chrt, simple_anno_size = unit(0.2, &quot;cm&quot;),annotation_name_side = &quot;left&quot;,
+                              annotation_name_gp = gpar(fontsize = 0),
+                              annotation_legend_param  = list(grid_width = unit(0.3, &quot;cm&quot;),
+                                                              grid_height = unit(0.3, &quot;cm&quot;),
+                                                              title_gp = gpar(fontsize = 8),
+                                                              labels_gp = gpar(fontsize = 8)),
+                              col = list(Group=c(&quot;COVID19&quot;=&quot;#ffa500&quot;,&quot;Healthy&quot;=&quot;#4682b4&quot;)))
+
+Heatmap(as.matrix(t(scale(t(GlycoGeneTPM)))),col=col_tpm,top_annotation = chrt_anno,
+        column_split = chrt$Group,
+           name = &quot;z-score&quot;,row_names_gp=gpar(fontsize = 6),
+           height  = unit(5, &quot;cm&quot;),width  = unit(8, &quot;cm&quot;))</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<p>If you want to remove the sample IDs,</p>
+<pre class="r"><code>library(circlize)
+library(ComplexHeatmap)
+
+# Define the color range
+col_tpm = colorRamp2(c(2,1,0.5,0,-0.5,-1,-2),c(&quot;#ffff19&quot;,&quot;#99990f&quot;,&quot;#4c4c07&quot;,&quot;white&quot;,&quot;#203470&quot;,&quot;#3454b4&quot;,&quot;#4169e1&quot;))
+
+chrt=read.delim(&quot;Design.txt&quot;,row.names = 1)
+
+#Lets remove columns except Group.
+
+chrt$Age=NULL
+chrt$Gender=NULL
+chrt$BMI=NULL
+
+chrt_anno = HeatmapAnnotation(df = chrt, simple_anno_size = unit(0.2, &quot;cm&quot;),
+                              col = list(Group=c(&quot;COVID19&quot;=&quot;#ffa500&quot;,&quot;Healthy&quot;=&quot;#4682b4&quot;)))
+
+Heatmap(as.matrix(t(scale(t(GlycoGeneTPM)))),col=col_tpm,
+        top_annotation = chrt_anno,
+        column_split = chrt$Group,
+           name = &quot;z-score&quot;,row_names_gp=gpar(fontsize = 6),
+           height  = unit(5, &quot;cm&quot;),width  = unit(8, &quot;cm&quot;),
+        show_column_names = FALSE)</code></pre>
+<p><img src="chapter2_files/figure-html/unnamed-chunk-28-1.png" width="672" /></p>
+<p>What can be interpreted from the heatmap? Does it make sense?</p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

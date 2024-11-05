@@ -1,9 +1,23 @@
 ---
-title: "My Website"
+title: "Introduction to NGS"
+output:
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
-Hello, Website!
+Welcome to the **Introductory course on NGS data Analysis**. 
 
-For more information about simple R Markdown websites, please read the documentation at https://bookdown.org/yihui/rmarkdown/rmarkdown-site.html.
+The website contains instructions and codes required for hands-on sessions of the course.
 
-Please also note that simple R Markdown sites are _not_ based on **blogdown**. They are probably good for websites with only a few Rmd documents. For larger-scale and more sophisticated websites (such as blogs), you may want to use **blogdown** instead: https://github.com/rstudio/blogdown.
+The practical sessions involves the given below tasks
+
+1. Handling Fastq files
+2. Quality Check using FastQC
+3. Basics of R
+4. Sample distribution assessment (using gene-expression data)
+5. Differential gene-expression analysis
+6. Gene-set enrichment analysis
+
+<br>
+

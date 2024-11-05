@@ -16,7 +16,7 @@
 <script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -30,8 +30,18 @@
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M3MJYFFV49"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M3MJYFFV49');
+</script>
+
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -58,6 +68,7 @@ if (window.hljs) {
 
 
 
+<link rel="stylesheet" href="styles.css" type="text/css" />
 
 
 
@@ -216,6 +227,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -238,15 +252,33 @@ $(document).ready(function () {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">My Website</a>
+      <a class="navbar-brand" href="index.html">About the course</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="index.html">Home</a>
+  <a href="preCourse.html">More Information</a>
 </li>
 <li>
-  <a href="about.html">About</a>
+  <a href="Configure.html">System configuration</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Exercises
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="chapter0.html">Chapter 1</a>
+    </li>
+    <li>
+      <a href="chapter1.html">Chapter 2</a>
+    </li>
+    <li>
+      <a href="chapter2.html">Chapter 3</a>
+    </li>
+  </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -258,6 +290,14 @@ $(document).ready(function () {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">About This Website</h1>
@@ -266,6 +306,20 @@ $(document).ready(function () {
 
 
 <p>More about this website.</p>
+<pre class="r"><code>library(ggplot2)
+var &lt;- cbind(PC = rownames(var), var)
+head(var)
+var$PC &lt;- factor(var$PC, levels = var$PC)
+ggplot(data=var, aes(x=PC, y=Variance)) + geom_bar(stat=&quot;identity&quot;,fill=&quot;#bb9b49&quot;)+
+  theme(axis.title.x = element_blank(),plot.title = element_text(hjust = 0.5))+labs(title = &quot;Variance captured&quot;,y=&quot;Percentage of Variance&quot;)
+
+
+ggplot(p$rotated, aes(x=PC1, y=PC2,color=Group)) + geom_point(size=4,shape=21,aes(fill=Group))+
+  scale_color_manual(values=c(Treated=&quot;#6c0202&quot;,Control=&quot;#2e6f43&quot;))+    #Outline color of the points
+  scale_fill_manual(values=c(Treated=&quot;#b50404&quot;,Control=&quot;#5dde86&quot;))+     #Fill color of the points
+  theme(axis.title = element_text(size=9,hjust = 0.5),plot.title = element_text(hjust = 0.5))+
+  labs(x = &quot;PC1, 33.43% variation&quot;,y=&quot;PC2, 26.73% variation&quot;,fill=&quot;Group&quot;,color=&quot;Group&quot;,title = &quot;PCA Plot&quot;)
+#&lt;img src=&quot;images/MiniLogo.png&quot; style=&quot;position:absolute; top:100px; right:200px; width:200px; height:auto;&quot; /&gt;</code></pre>
 
 
 
@@ -300,6 +354,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
